@@ -84,6 +84,10 @@ in
       source = ../../../config/nvim;
       recursive = true;
     };
+    "wezterm" = {
+      source = ../../../config/wezterm;
+      recursive = true;
+    };
     "opencode/opencode.jsonc".source = ../../../config/opencode/opencode.jsonc;
     "opencode/AGENTS.md".source = ../../../config/opencode/AGENTS.md;
     "zsh/rc.zsh".source = ../../../config/zsh/rc.zsh;

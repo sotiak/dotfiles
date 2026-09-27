@@ -15,15 +15,6 @@ config.window_background_opacity = 0.95
 config.tab_bar_at_bottom = true
 config.tab_max_width = 25
 
--- Fancy Tab用のフォント
-config.window_frame = {
-  font = wezterm.font_with_fallback({
-    { family = "Mulish", weight = 700 },
-    { family = "Symbols Nerd Font Mono" },
-  }),
-  font_size = 10,
-}
-
 -- 起動時のウィンドウサイズ
 config.initial_rows = 32
 config.initial_cols = 100
