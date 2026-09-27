@@ -71,6 +71,10 @@
 
   programs.zsh.enable = true;
 
+  services.tailscale.enable = true;
+
+  services.openssh.enable = true;
+
   services.pcscd = {
     enable = true;
     plugins = [ pkgs.ccid ];
