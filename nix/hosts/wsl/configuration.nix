@@ -75,6 +75,8 @@
 
   services.openssh.enable = true;
 
+  virtualisation.docker.enable = true;
+
   services.pcscd = {
     enable = true;
     plugins = [ pkgs.ccid ];
@@ -106,7 +108,10 @@
 
   users.users.sk = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [
+      "wheel"
+      "docker"
+    ];
     shell = pkgs.zsh;
   };
 }
