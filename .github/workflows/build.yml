@@ -73,7 +73,7 @@ jobs:
         include-hidden-files: true
 
   build-mbp-a2159:
-    runs-on: macos-15-intel
+    runs-on: macos-26-intel
     timeout-minutes: 45
     permissions:
       contents: read
