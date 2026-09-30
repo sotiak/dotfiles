@@ -4,6 +4,13 @@
   "nix": {
     "enabled": true
   },
+  "packageRules": [
+    {
+      "matchPackageNames": ["macos"],
+      "matchFileNames": [".github/workflows/**"],
+      "allowedVersions": "/^15-intel$/"
+    }
+  ],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 5am on monday"]
