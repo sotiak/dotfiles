@@ -33,7 +33,7 @@ home-manager switch --experimental-features "nix-command flakes" --accept-flake-
 
 The Intel profile uses Nixpkgs and Home Manager 26.05, the final release line supporting `x86_64-darwin`.
 
-Renovate updates `flake.lock` weekly and opens a pull request; CI builds both the WSL and Intel Mac profiles before it is merged.
+Renovate updates `flake.lock` daily and opens a pull request; CI builds both the WSL and Intel Mac profiles before it is merged.
 
 Change default shell.
 
@@ -60,7 +60,7 @@ Flake structure: [numtide/blueprint](https://numtide.github.io/blueprint/main/)
 
 - `nix/hosts/`: Linux host configurations and standalone Home Manager users, following Blueprint's folder structure.
 - `nix/darwin/`: Intel Mac Blueprint root, isolated to use the final Nixpkgs/Home Manager releases that support `x86_64-darwin`.
-- `nix/modules/`: shared Home Manager modules.
+- `nix/modules/`: shared and private-only Home Manager modules, plus reusable NixOS modules.
 - `nix/packages/`: locally defined packages.
 - `nix/`: Blueprint formatter and development shell definitions.
 

@@ -1,5 +1,6 @@
 {
   config,
+  flake,
   hostName,
   inputs,
   perSystem,
@@ -11,6 +12,7 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     inputs.paseo.nixosModules.default
+    flake.nixosModules.private
   ];
 
   system.stateVersion = "26.05";
@@ -70,8 +72,6 @@
   };
 
   programs.zsh.enable = true;
-
-  services.tailscale.enable = true;
 
   services.openssh.enable = true;
 

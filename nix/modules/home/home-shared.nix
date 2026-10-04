@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  perSystem,
   pkgs,
   ...
 }:
@@ -8,6 +9,7 @@
 let
   pinentryPackage =
     if pkgs.stdenv.hostPlatform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-all;
+  llmAgentPackages = if pkgs.stdenv.hostPlatform.isDarwin then pkgs else perSystem.llm-agents;
 in
 {
   imports = [
@@ -17,48 +19,52 @@ in
   xdg.enable = true;
 
   home = {
-    packages = with pkgs; [
-      # Shell tools
-      bat
-      curl
-      fzf
-      jq
-      pure-prompt
-      ripgrep
-      tree
-      unzip
-      wget
-      helix
+    packages =
+      (with pkgs; [
+        # Shell tools
+        bat
+        curl
+        fzf
+        jq
+        pure-prompt
+        ripgrep
+        tree
+        unzip
+        wget
+        helix
 
-      # Development
-      ghalint
-      gh
-      ghq
-      git
-      actionlint
-      betterleaks
-      devenv
-      opentofu
-      pinact
-      tig
-      cloudflared
+        # Development
+        ghalint
+        gh
+        ghq
+        git
+        actionlint
+        betterleaks
+        devenv
+        pinact
+        tig
 
-      # Languages
-      clang
-      go
-      nodejs_24
-      pnpm
-      rustup
-      uv
-      zig
+        # Languages
+        clang
+        go
+        nodejs_24
+        pnpm
+        rustup
+        uv
+        zig
 
-      # GPG support
-      sops
+        # GPG support
+        sops
 
-      # Misc
-      ast-grep
-      ffmpeg
-    ];
+        # Misc
+        ast-grep
+        ffmpeg
+      ])
+      ++ (with llmAgentPackages; [
+        agent-browser
+        gemini-cli
+        opencode
+      ]);
 
     sessionVariables = {
       LC_MESSAGES = "en_US.UTF-8";

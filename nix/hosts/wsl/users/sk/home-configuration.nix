@@ -10,6 +10,7 @@ in
 {
   imports = [
     flake.homeModules."home-shared"
+    flake.homeModules."home-private"
     ./windows-ssh-agent-relay.nix
   ];
 
@@ -34,25 +35,19 @@ in
     settings."192.168.10.15".PubkeyAuthentication = "yes";
   };
 
-  home.packages =
-    (with perSystem.llm-agents; [
-      agent-browser
-      gemini-cli
-      opencode
-    ])
-    ++ (with pkgs; [
-      perSystem.self.mo
-      pcsc-tools
-      usbutils
-      (writeShellScriptBin "wsl-fix-interop" ''
-        set -euo pipefail
+  home.packages = with pkgs; [
+    perSystem.self.mo
+    pcsc-tools
+    usbutils
+    (writeShellScriptBin "wsl-fix-interop" ''
+      set -euo pipefail
 
-        printf '%s\n' ':WSLInterop:M::MZ::/init:PF' | sudo tee /usr/lib/binfmt.d/WSLInterop.conf >/dev/null
-        sudo systemctl unmask systemd-binfmt.service
-        sudo systemctl restart systemd-binfmt
-        sudo systemctl mask systemd-binfmt.service
-      '')
-    ]);
+      printf '%s\n' ':WSLInterop:M::MZ::/init:PF' | sudo tee /usr/lib/binfmt.d/WSLInterop.conf >/dev/null
+      sudo systemctl unmask systemd-binfmt.service
+      sudo systemctl restart systemd-binfmt
+      sudo systemctl mask systemd-binfmt.service
+    '')
+  ];
 
   systemd.user.services.opencode-web = {
     Unit = {
