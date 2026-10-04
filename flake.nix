@@ -42,6 +42,7 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    flake-utils.url = "github:numtide/flake-utils";
     treefmt = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -66,6 +67,31 @@
         prefix = "nix/darwin/";
         systems = [ "x86_64-darwin" ];
       };
+      devShells =
+        inputs.flake-utils.lib.eachSystem
+          [
+            "x86_64-linux"
+            "x86_64-darwin"
+          ]
+          (
+            system:
+            let
+              systemInputs = if system == "x86_64-darwin" then darwinInputs else inputs;
+              pkgs = systemInputs.nixpkgs.legacyPackages.${system};
+              perSystem = {
+                self.formatter = import ./nix/formatter.nix {
+                  inputs = systemInputs;
+                  inherit pkgs;
+                };
+              };
+            in
+            {
+              devShells.default = import ./nix/devshell.nix {
+                inputs = systemInputs;
+                inherit perSystem pkgs system;
+              };
+            }
+          );
     in
-    inputs.nixpkgs.lib.recursiveUpdate linux darwin;
+    inputs.nixpkgs.lib.recursiveUpdate (inputs.nixpkgs.lib.recursiveUpdate linux darwin) devShells;
 }

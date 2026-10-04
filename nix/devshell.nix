@@ -7,7 +7,28 @@
 }:
 
 let
-  git-hooks = inputs.git-hooks.lib.${system};
+  # git-hooks currently omits x86_64-darwin from its flake outputs.
+  git-hooks =
+    inputs.git-hooks.lib.${system} or (import (inputs.git-hooks.outPath + "/nix") {
+      nixpkgs = inputs.nixpkgs.outPath;
+      inherit system;
+      isFlakes = true;
+    });
+  mcpNixos =
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      let
+        python3Packages = pkgs.python3Packages.overrideScope (
+          _: prev: {
+            py-key-value-aio = prev.py-key-value-aio.overridePythonAttrs (_: {
+              # Avoid a test-only DuckDB -> PyArrow dependency; arrow-cpp is broken on Intel Darwin.
+              nativeCheckInputs = [ ];
+            });
+          }
+        );
+      in
+      pkgs.mcp-nixos.override { inherit python3Packages; }
+    else
+      pkgs.mcp-nixos;
   preCommitCheck = git-hooks.run {
     src = ../.;
     package = pkgs.prek;
@@ -36,8 +57,8 @@ pkgs.mkShellNoCC {
       statix
       deadnix
       opentofu
-      mcp-nixos
     ])
+    ++ [ mcpNixos ]
     ++ preCommitCheck.enabledPackages;
 
 }
