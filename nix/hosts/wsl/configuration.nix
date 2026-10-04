@@ -19,7 +19,7 @@
 
   nixpkgs.hostPlatform = "x86_64-linux";
 
-  networking.hostName = hostName;
+  networking.hostName = "e14-wsl";
 
   nix.settings = {
     experimental-features = [
