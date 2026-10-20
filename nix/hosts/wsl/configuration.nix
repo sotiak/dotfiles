@@ -19,6 +19,8 @@
 
   nixpkgs.hostPlatform = "x86_64-linux";
 
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
   networking.hostName = "e14-wsl";
 
   nix.settings = {
@@ -88,10 +90,7 @@
     group = "users";
     dataDir = "${config.users.users.sk.home}/.paseo";
     inheritUserEnvironment = true;
-    package = perSystem.paseo.default.override {
-      # Recomputed for the nixpkgs revision locked by the Paseo input.
-      npmDepsHash = "sha256-9UWtpZrCdyYyGq3HGNgSpU1+2Imu3oYqtSumq2DtANc=";
-    };
+    package = perSystem.paseo.default;
 
     environment = {
       SSH_AUTH_SOCK = "${config.users.users.sk.home}/.ssh/agent.sock";
