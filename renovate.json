@@ -9,10 +9,10 @@
       "matchPackageNames": ["macos"],
       "matchFileNames": [".github/workflows/**"],
       "allowedVersions": "/^15-intel$/"
+    },
+    {
+      "matchManagers": ["nix"],
+      "groupName": "nix flake inputs"
     }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["* 0-4 * * *"]
-  }
+  ]
 }
