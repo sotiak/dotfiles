@@ -37,7 +37,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
-    paseo.url = "github:getpaseo/paseo";
+    paseo.url = "github:getpaseo/paseo/v0.13.2";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,6 +48,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+
+    # Skills for AI agents
+    natural-japanese = {
+      url = "github:coji/natural-japanese";
+      flake = false;
+    };
   };
 
   outputs =

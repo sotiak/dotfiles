@@ -90,7 +90,9 @@
     group = "users";
     dataDir = "${config.users.users.sk.home}/.paseo";
     inheritUserEnvironment = true;
-    package = perSystem.paseo.default;
+    package = perSystem.paseo.default.override {
+      npmDepsHash = "sha256-eNiKmiZ3XXZMRZRSoGxUbMn2RtY6AX079vUatBYM+qE=";
+    };
 
     environment = {
       SSH_AUTH_SOCK = "${config.users.users.sk.home}/.ssh/agent.sock";

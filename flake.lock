@@ -210,6 +210,22 @@
         "type": "github"
       }
     },
+    "natural-japanese": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792129176,
+        "narHash": "sha256-Il7tG4edqjf/nBNOo0QXPztFmH4MwjHf0g5nVL+IWAY=",
+        "owner": "coji",
+        "repo": "natural-japanese",
+        "rev": "03bc944a0c4a9f0b2a66eab065b30de5c529bf08",
+        "type": "github"
+      },
+      "original": {
+        "owner": "coji",
+        "repo": "natural-japanese",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -315,15 +331,16 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1792488361,
-        "narHash": "sha256-dE4u7XEAuGMLnpOe6a2ochgWFJW3gUBQkALZD2xB1bg=",
+        "lastModified": 1793012746,
+        "narHash": "sha256-q9CTVmmdN53rLXaY+/cKz1IbW1OQA9ok9xan4lBSH1E=",
         "owner": "getpaseo",
         "repo": "paseo",
-        "rev": "068f272a00ffef3f00ec30ec4cfa3a631be97624",
+        "rev": "d2941157a8f91512daf54fc688241d416e8f5ebd",
         "type": "github"
       },
       "original": {
         "owner": "getpaseo",
+        "ref": "v0.13.2",
         "repo": "paseo",
         "type": "github"
       }
@@ -336,6 +353,7 @@
         "home-manager": "home-manager",
         "home-manager-darwin": "home-manager-darwin",
         "llm-agents": "llm-agents",
+        "natural-japanese": "natural-japanese",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-darwin": "nixpkgs-darwin",
