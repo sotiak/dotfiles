@@ -1,19 +1,23 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "disabled_providers": ["opencode"],
+  "policies": [
+    {
+      "action": "provider.use",
+      "resource": "opencode",
+      "effect": "deny"
+    }
+  ],
   "mcp": {
-    "cloudflare-api": {
-      "type": "remote",
-      "url": "https://mcp.cloudflare.com/mcp",
-      "enabled": true
-    },
-    "agent-browser": {
-      "type": "local",
-      "command": ["agent-browser", "mcp"],
-      "enabled": true
+    "servers": {
+      "cloudflare-api": {
+        "type": "remote",
+        "url": "https://mcp.cloudflare.com/mcp"
+      },
+      "agent-browser": {
+        "type": "local",
+        "command": ["agent-browser", "mcp"]
+      }
     }
   },
-  "plugin": [
-    "@dietrichgebert/ponytail"
-  ]
+  "plugins": ["@dietrichgebert/ponytail"]
 }

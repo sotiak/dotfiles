@@ -74,6 +74,7 @@ in
 
     sessionVariables = {
       LC_MESSAGES = "en_US.UTF-8";
+      OPENCODE_DISABLE_FREE_MODELS = "1";
 
       LESSHISTFILE = "${config.xdg.stateHome}/less/history";
     };
