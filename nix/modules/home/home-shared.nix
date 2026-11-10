@@ -7,11 +7,6 @@
   ...
 }:
 
-let
-  pinentryPackage =
-    if pkgs.stdenv.hostPlatform.isDarwin then pkgs.pinentry_mac else pkgs.pinentry-all;
-  llmAgentPackages = if pkgs.stdenv.hostPlatform.isDarwin then pkgs else perSystem.llm-agents;
-in
 {
   imports = [
     inputs.sops-nix.homeManagerModules.sops
@@ -63,10 +58,10 @@ in
         ast-grep
         ffmpeg
       ])
-      ++ (with llmAgentPackages; [
-        agent-browser
-        gemini-cli
-      ])
+      ++ [
+        perSystem.self.agent-browser
+        perSystem.self.gemini-cli
+      ]
       # Pi's official flake also builds for Intel macOS, unlike llm-agents.nix.
       ++ [ perSystem.pi.default ];
 
@@ -195,7 +190,7 @@ in
     defaultCacheTtl = 34560000;
     maxCacheTtl = 34560000;
     extraConfig = ''
-      pinentry-program ${pkgs.lib.getExe pinentryPackage}
+      pinentry-program ${pkgs.lib.getExe perSystem.self.pinentry}
     '';
   };
 

@@ -1,0 +1,3 @@
+{ pkgs, ... }:
+
+pkgs.pinentry-all
