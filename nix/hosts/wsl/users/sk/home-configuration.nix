@@ -4,9 +4,6 @@
   pkgs,
   ...
 }:
-let
-  opencode = perSystem.llm-agents.opencode;
-in
 {
   imports = [
     flake.homeModules."home-shared"
@@ -36,6 +33,7 @@ in
   };
 
   home.packages = with pkgs; [
+    perSystem.llm-agents.dsh
     perSystem.self.mo
     pcsc-tools
     usbutils
@@ -49,18 +47,20 @@ in
     '')
   ];
 
-  systemd.user.services.opencode-web = {
-    Unit = {
-      Description = "OpenCode Web server";
-    };
+  systemd.user.services = {
+    dsh-web = {
+      Unit = {
+        Description = "DeepSeek Harness Web server";
+      };
 
-    Service = {
-      ExecStart = "${opencode}/bin/opencode serve --hostname 127.0.0.1 --port 4096";
-      Restart = "on-failure";
-    };
+      Service = {
+        ExecStart = "${perSystem.llm-agents.dsh}/bin/dsh web --host 127.0.0.1 --port 3080 --no-open";
+        Restart = "on-failure";
+      };
 
-    Install = {
-      WantedBy = [ "default.target" ];
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
   };
 

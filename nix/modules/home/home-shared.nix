@@ -1,5 +1,6 @@
 {
   config,
+  flake,
   inputs,
   perSystem,
   pkgs,
@@ -14,6 +15,7 @@ in
 {
   imports = [
     inputs.sops-nix.homeManagerModules.sops
+    flake.homeModules."agent-skills"
   ];
 
   xdg.enable = true;
@@ -59,12 +61,16 @@ in
         # Misc
         ast-grep
         ffmpeg
+
+        # Nixpkgs ships OpenCode 2 on Linux, but only v1 for Intel macOS.
+        opencode
       ])
       ++ (with llmAgentPackages; [
         agent-browser
         gemini-cli
-        opencode
-      ]);
+      ])
+      # Pi's official flake also builds for Intel macOS, unlike llm-agents.nix.
+      ++ [ perSystem.pi.default ];
 
     sessionVariables = {
       LC_MESSAGES = "en_US.UTF-8";

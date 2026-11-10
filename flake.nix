@@ -48,10 +48,30 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
+    pi = {
+      # Official flake: https://pi.dev/docs/latest/quickstart
+      url = "github:earendil-works/pi/v1.5.1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        "nixpkgs-darwin-x64".follows = "nixpkgs-darwin";
+      };
+    };
 
     # Skills for AI agents
+    agent-skills = {
+      url = "github:Kyure-A/agent-skills-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     natural-japanese = {
       url = "github:coji/natural-japanese";
+      flake = false;
+    };
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+    security-audit-skill = {
+      url = "github:cloudflare/security-audit-skill";
       flake = false;
     };
   };
