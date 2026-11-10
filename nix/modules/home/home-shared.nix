@@ -16,6 +16,7 @@ in
   imports = [
     inputs.sops-nix.homeManagerModules.sops
     flake.homeModules."agent-skills"
+    flake.homeModules."opencode"
   ];
 
   xdg.enable = true;
@@ -61,9 +62,6 @@ in
         # Misc
         ast-grep
         ffmpeg
-
-        # Nixpkgs ships OpenCode 2 on Linux, but only v1 for Intel macOS.
-        opencode
       ])
       ++ (with llmAgentPackages; [
         agent-browser
@@ -74,7 +72,6 @@ in
 
     sessionVariables = {
       LC_MESSAGES = "en_US.UTF-8";
-      OPENCODE_DISABLE_FREE_MODELS = "1";
 
       LESSHISTFILE = "${config.xdg.stateHome}/less/history";
     };
@@ -101,8 +98,6 @@ in
       source = ../../../config/wezterm;
       recursive = true;
     };
-    "opencode/opencode.jsonc".source = ../../../config/opencode/opencode.jsonc;
-    "opencode/AGENTS.md".source = ../../../config/opencode/AGENTS.md;
     "zsh/rc.zsh".source = ../../../config/zsh/rc.zsh;
   };
 
