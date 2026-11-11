@@ -1,0 +1,7 @@
+issuer: https://token.actions.githubusercontent.com
+# Covers both the name-only and immutable subject claim formats.
+subject_pattern: "repo:sotiak(@35842766)?/dotfiles(@225720671)?:ref:refs/heads/master"
+
+permissions:
+  contents: write
+  pull_requests: write

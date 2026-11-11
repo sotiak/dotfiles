@@ -1,0 +1,30 @@
+name: update-flake-lock
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # 31.11.3
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          accept-flake-config = true
+    - uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05 # v1.1.1
+      id: octo-sts
+      with:
+        scope: sotiak/dotfiles
+        identity: flake-update
+    - uses: DeterminateSystems/update-flake-lock@da03c0f078bc4b2c37ee4f7e072d34bf8f188bb3 # v29
+      with:
+        token: ${{ steps.octo-sts.outputs.token }}
+        pr-title: "Update Nix flake inputs"
