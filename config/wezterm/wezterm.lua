@@ -28,7 +28,12 @@ config.colors = { scrollbar_thumb = "Gray" }
 
 -- カーソル色を反転
 config.force_reverse_video_cursor = true
-config.font = wezterm.font_with_fallback({ "Noto Sans Mono", "BIZ UDGothic", "Symbols Nerd Font Mono" })
+config.font = wezterm.font_with_fallback {
+    {
+        family = "Jack",
+        harfbuzz_features = { "zero" }
+    }
+}
 
 -- 非アクティブペインの見た目
 config.inactive_pane_hsb = {
