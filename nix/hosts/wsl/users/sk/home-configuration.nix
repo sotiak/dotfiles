@@ -40,6 +40,7 @@
     perSystem.self.agent-browser
     perSystem.self.gemini-cli
     perSystem.self.mo
+    perSystem.self.t3code
     pcsc-tools
     usbutils
     (writeShellScriptBin "wsl-fix-interop" ''
@@ -53,6 +54,22 @@
   ];
 
   systemd.user.services = {
+    t3code = {
+      Unit = {
+        Description = "T3 Code server";
+      };
+
+      Service = {
+        ExecStart = "${perSystem.self.t3code}/bin/t3 serve --lan --no-browser --host 0.0.0.0";
+        WorkingDirectory = "%h";
+        Restart = "on-failure";
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
+
     dsh-web = {
       Unit = {
         Description = "DeepSeek Harness Web server";
