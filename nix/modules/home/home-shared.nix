@@ -57,10 +57,6 @@
         ast-grep
         ffmpeg
       ])
-      ++ [
-        perSystem.self.agent-browser
-        perSystem.self.gemini-cli
-      ]
       # Pi's official flake also builds for Intel macOS, unlike llm-agents.nix.
       ++ [ perSystem.pi.default ];
 
@@ -128,23 +124,6 @@
         [ -r "$ZDOTDIR/rc.zsh" ] && source "$ZDOTDIR/rc.zsh"
       '';
     };
-
-    chromium.enable = pkgs.stdenv.hostPlatform.isLinux;
-
-    #atuin = {
-    #  enable = true;
-    #  enableZshIntegration = true;
-    #  flags = [ "--disable-up-arrow" ];
-    #  settings = {
-    #    auto_sync = true;
-    #    enter_accept = false;
-    #    style = "compact";
-    #    records = true;
-    #  };
-    #  daemon = {
-    #    enable = true;
-    #  };
-    #};
 
     zoxide = {
       enable = true;

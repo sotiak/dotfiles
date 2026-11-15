@@ -25,6 +25,8 @@
     "zsh/wsl.zsh".source = ../../../../../config/zsh/wsl.zsh;
   };
 
+  programs.chromium.enable = true;
+
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
@@ -35,6 +37,8 @@
 
   home.packages = with pkgs; [
     perSystem.llm-agents.dsh
+    perSystem.self.agent-browser
+    perSystem.self.gemini-cli
     perSystem.self.mo
     pcsc-tools
     usbutils
