@@ -11,7 +11,6 @@
   imports = [
     inputs.sops-nix.homeManagerModules.sops
     flake.homeModules."agent-skills"
-    flake.homeModules."opencode"
   ];
 
   xdg.enable = true;

@@ -8,6 +8,7 @@
   imports = [
     flake.homeModules."home-shared"
     flake.homeModules."home-private"
+    flake.homeModules."opencode"
     ./windows-ssh-agent-relay.nix
   ];
 
