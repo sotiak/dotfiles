@@ -54,22 +54,17 @@
 
     wslConf = {
       user.default = "sk";
-      boot.systemd = true;
+      boot = {
+        systemd = true;
+        # WSL's protectBinfmt overrides systemd-binfmt, which wipes
+        # WSLInterop when nixos-rebuild remounts binfmt_misc.
+        protectBinfmt = false;
+      };
 
       interop = {
         enabled = true;
         appendWindowsPath = false;
       };
-    };
-
-    ssh-agent = {
-      enable = true;
-      users = [ "sk" ];
-    };
-
-    usbip = {
-      enable = true;
-      autoAttach = [ "2-1" ];
     };
   };
 
@@ -77,12 +72,13 @@
 
   services.openssh.enable = true;
 
-  virtualisation.docker.enable = true;
+  # WSL's eth0 MTU can drop to 1280; lower tailscale0 so WireGuard
+  # encapsulation does not blackhole large packets.
+  systemd.services.tailscaled.serviceConfig.ExecStartPost = [
+    "${pkgs.iproute2}/bin/ip link set tailscale0 mtu 1200"
+  ];
 
-  services.pcscd = {
-    enable = true;
-    plugins = [ pkgs.ccid ];
-  };
+  virtualisation.docker.enable = true;
 
   services.paseo = {
     enable = true;
@@ -91,11 +87,7 @@
     dataDir = "${config.users.users.sk.home}/.paseo";
     inheritUserEnvironment = true;
     package = perSystem.paseo.default.override {
-      npmDepsHash = "sha256-eNiKmiZ3XXZMRZRSoGxUbMn2RtY6AX079vUatBYM+qE=";
-    };
-
-    environment = {
-      SSH_AUTH_SOCK = "${config.users.users.sk.home}/.ssh/agent.sock";
+      npmDepsHash = "sha256-SZV3WTKLb+JhxWNo/jWyx+2sipzfL93YbbqQSihd3Wo=";
     };
   };
 

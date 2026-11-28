@@ -1,18 +1,35 @@
 {
+  config,
   flake,
+  lib,
   perSystem,
   pkgs,
   ...
 }:
+let
+  opencodeTelemetry = pkgs.callPackage ./opencode-telemetry.nix { };
+in
 {
   imports = [
     flake.homeModules."home-shared"
     flake.homeModules."home-private"
     flake.homeModules."opencode"
-    ./windows-ssh-agent-relay.nix
   ];
 
-  home.stateVersion = "26.05";
+  home = {
+    stateVersion = "26.05";
+
+    # win32yank.exe for the Neovim clipboard integration
+    sessionPath = [ "/mnt/c/tools/bin" ];
+
+    sessionVariables = {
+      SOPS_AGE_KEY_FILE = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+    };
+  };
+
+  sops.age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+
+  services.gpg-agent.enableSshSupport = lib.mkForce false;
 
   xdg.configFile = {
     "git/wsl.gitconfig".text = ''
@@ -27,46 +44,24 @@
 
   programs.chromium.enable = true;
 
-  programs.ssh = {
-    enable = true;
-    enableDefaultConfig = false;
-    # The Windows OpenSSH agent relay rejects the unbound mode in WSL,
-    # so constrain the workaround to the affected host for now.
-    settings."192.168.10.15".PubkeyAuthentication = "yes";
-  };
-
   home.packages = with pkgs; [
     perSystem.llm-agents.dsh
     perSystem.self.agent-browser
     perSystem.self.gemini-cli
     perSystem.self.mo
-    perSystem.self.t3code
-    pcsc-tools
+    opencodeTelemetry
     usbutils
-    (writeShellScriptBin "wsl-fix-interop" ''
-      set -euo pipefail
-
-      printf '%s\n' ':WSLInterop:M::MZ::/init:PF' | sudo tee /usr/lib/binfmt.d/WSLInterop.conf >/dev/null
-      sudo systemctl unmask systemd-binfmt.service
-      sudo systemctl restart systemd-binfmt
-      sudo systemctl mask systemd-binfmt.service
-    '')
   ];
 
   systemd.user.services = {
-    t3code = {
+    opencode-telemetry = {
       Unit = {
-        Description = "T3 Code server";
+        Description = "Export OpenCode usage stats to VictoriaMetrics";
       };
 
       Service = {
-        ExecStart = "${perSystem.self.t3code}/bin/t3 serve --lan --no-browser --host 0.0.0.0";
-        WorkingDirectory = "%h";
-        Restart = "on-failure";
-      };
-
-      Install = {
-        WantedBy = [ "default.target" ];
+        Type = "oneshot";
+        ExecStart = "${opencodeTelemetry}/bin/opencode-telemetry";
       };
     };
 
@@ -83,6 +78,21 @@
       Install = {
         WantedBy = [ "default.target" ];
       };
+    };
+  };
+
+  systemd.user.timers.opencode-telemetry = {
+    Unit = {
+      Description = "Collect OpenCode usage stats every minute";
+    };
+
+    Timer = {
+      OnCalendar = "*:0/1";
+      AccuracySec = "10s";
+    };
+
+    Install = {
+      WantedBy = [ "timers.target" ];
     };
   };
 
