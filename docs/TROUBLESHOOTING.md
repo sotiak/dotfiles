@@ -9,8 +9,8 @@ zsh: exec format error: /mnt/c/Windows/System32/cmd.exe
 cat: /proc/sys/fs/binfmt_misc/WSLInterop: No such file or directory
 ```
 
-原因は WSL の `protectBinfmt` が `systemd-binfmt` を上書きし、
-`nixos-rebuild` が `binfmt_misc` を remount したときに登録が消えること。
+原因は WSL の `protectBinfmt` が `systemd-binfmt` を上書きすることだ。
+`nixos-rebuild` が `binfmt_misc` を remount したときに、登録が消える。
 
 WSL 側では `wsl.wslConf.boot.protectBinfmt = false` にして、
 NixOS の `systemd-binfmt` に `WSLInterop` と `aarch64` を登録させている。
@@ -29,7 +29,7 @@ ls /proc/sys/fs/binfmt_misc/
 NixOS にはそのディレクトリが無く、mask も残るため使わない。
 
 `nixos-rebuild switch` で `systemd-binfmt` が失敗する場合は、
-一時的に `boot.binfmt.emulatedSystems` を外して switch し、
+一時的に `boot.binfmt.emulatedSystems` を外して switch する。
 `wsl --shutdown` 後に戻して switch する。
 
 ## Git 署名が失敗する

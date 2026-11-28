@@ -77,7 +77,7 @@ gh auth login -h github.com -p https -w
 gh auth status
 ```
 
-GitHub の commit signature は GPG の主キー fingerprint で検証される。
+GitHub は commit signature を GPG の主キー fingerprint で検証する。
 `config/git/config` の `user.signingkey` は主キー fingerprint のまま。
 
 ```plaintext
@@ -121,7 +121,7 @@ age の秘密鍵 `~/.config/sops/age/keys.txt` は別途バックアップする
 
 ## 端末移行時
 
-新しい端末では、Home Manager適用後にYubiKeyから公開鍵URLを読み、公開鍵importとsmartcard stub作成を行う。
+新しい端末では、Home Manager を適用したあとに YubiKey から公開鍵 URL を読み、公開鍵を import し、smartcard stub を作成する。
 `gpg --card-edit`の`fetch`は、カードに登録された`URL of public key`から公開鍵を取得する。
 カード操作は Windows 側 `gpg.exe` で行う。
 
