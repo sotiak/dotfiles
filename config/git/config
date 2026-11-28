@@ -32,6 +32,9 @@
 [diff]
 	algorithm = patience
 	compactionHeuristic = true
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+
 [include]
 	path = local.gitconfig
 	path = wsl.gitconfig

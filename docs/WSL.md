@@ -1,154 +1,116 @@
 # WSL
 
-WSL では、SSH と GPG で通る経路が異なる。
+WSL では、用途ごとに経路を分ける。
 
-**SSH Agent** は、Windows の OpenSSH agent を `npiperelay.exe` と `socat` で WSL に中継する。
+| 用途 | 経路 | YubiKey |
+| --- | --- | --- |
+| GitHub への push | HTTPS + `gh` の OAuth トークン | 不要 |
+| Git の commit/tag 署名 | Windows 側 GnuPG のローカル `[S]` | 不要 |
+| SOPS の復号 | age のローカル鍵 | 不要 |
+| VM への SSH | Tailscale SSH | 不要 |
 
-**GPG Agent** は、用途ごとに二つに分かれる。
+YubiKey 5 NFC は、phone の FIDO2 / OATH、GPG 鍵のバックアップとして持ち歩く。
+開発マシンの GitHub・署名・SOPS・VM SSH では使わない。5C Nano も使わない。
 
-- Git の署名では、WSL の Git から Windows 側の `gpg.exe` を呼ぶ。
-- YubiKey を使うカード操作や SOPS の復号では、WSL 側の `gpg` が `pcscd` 経由でカードを読む。
+## GitHub は HTTPS
 
-この区別を外すと、関係のない場所を調べ続ける。
-
-たとえば `ssh-add -L` が失敗しているのに `pcscd` を見ても直らない。
-
-逆に `gpg --card-status` が失敗しているのに `npiperelay.exe` を見ても直らない。
-
-## SSH Agent
-
-まず確認するのは、WSL から見えている `SSH_AUTH_SOCK` が期待したソケットかどうかである。
+SSH 鍵ではなく、`gh auth login` の OAuth トークンを使う。
 
 ```bash
-echo "$SSH_AUTH_SOCK"
+gh auth login -h github.com -p https -w
+gh auth status
 ```
 
-この設定では、`SSH_AUTH_SOCK` は `~/.ssh/agent.sock` を指す。
-
-これは、user service の `windows-ssh-agent-relay` が毎回作り直すソケットである。
+`credential.https://github.com.helper` は `!gh auth git-credential` にしてある。
+`gh` のトークンは `~/.config/gh/hosts.yml`（mode 600）に保存される。
 
 ```bash
-systemctl --user status windows-ssh-agent-relay
-ls -l ~/.ssh/agent.sock
+git remote -v                  # origin は https://github.com/...
+git ls-remote origin HEAD      # 認証確認
 ```
 
-`systemctl --user` が失敗するなら、relay 自体が起動していない。
+- PAT ではない。不要になったら `gh auth logout` で失効する
+- paseo 配下のエージェントも `~/.config/gh/hosts.yml` と `gh` ヘルパーを使う
+- GitHub の SSH 鍵はフォールバックとして残してよい。WSL の git は使わない
 
-`~/.ssh/agent.sock` が無いなら、`socat` まで到達していない。
+## Git 署名と SOPS
 
-この service は `npiperelay.exe` を前提にする。
-
-そのため、Windows 側に `/mnt/c/tools/bin/npiperelay.exe` が無ければ起動しない。
-
-```bash
-ls /mnt/c/tools/bin/npiperelay.exe
-```
-
-次に、実際の SSH 認証経路を見る。
-
-```bash
-ssh -vvv pi@<host>
-```
-
-この環境では、`ssh-add -L` が `agent refused operation` を返しても、`ssh` 本体は relay 越しに接続できることがある。
-
-そのため、`ssh-add -L` の失敗だけで relay 不良とは決めない。
-
-`ssh -vvv` で `Offering public key:` まで進み、その鍵で認証に成功するかを優先して見る。
-
-`ssh-add -L` が `The agent has no identities.` を返すなら、relay は動いているが Windows 側 agent に鍵が載っていない。
-
-その場合は WSL ではなく Windows 側の OpenSSH agent を確認する。
-
-Windows では `ssh -o PubkeyAuthentication=unbound ...` が必要でも、WSL では同じ指定が失敗することがある。
-
-この環境の WSL OpenSSH 10.3p1 では、`PubkeyAuthentication=unbound` を付けると relay された Windows agent が `agent refused operation` を返し、鍵一覧の取得に失敗した。
-
-一方で、`PubkeyAuthentication yes` のままなら、一度 host-bound 側を拒否された後に fallback して認証できた。
-
-そのため、WSL 側では `PubkeyAuthentication=unbound` を使わないほうが安定する。
-
-## GPG 署名の確認
-
-Git の署名では、WSL の `gpg` を使っているとは限らない。
-
-この設定では、Git だけが Windows 側の `gpg.exe` を明示的に呼ぶ。
+Git 署名は Windows 側 GnuPG のローカル `[S]` サブキー。
 
 ```bash
 git config --show-origin --get gpg.program
 git config --show-origin --get user.signingkey
 ```
 
-`gpg.program` が `/mnt/c/Program Files/GnuPG/bin/gpg.exe` を指していれば、`git commit -S` は Windows 側 GnuPG に依存する。
+- `gpg.program` は `/mnt/c/Program Files/GnuPG/bin/gpg.exe`
+- PIN は Windows gpg-agent がキャッシュする（`default-cache-ttl 34560000`）
+- YubiKey は不要。タッチも不要
 
-したがって、`git commit -S` の失敗は、まず Windows 側 GnuPG と pinentry を疑う。
-
-WSL 側の `gpg --card-status` が失敗していても、Git 署名の失敗原因とは限らない。
-
-逆に `git commit -S` だけ失敗するなら、`usbip` や `pcscd` を見ても外れることがある。
-
-WSL から Windows バイナリを起動できない場合は、`WSLInterop` の破損も疑う。
+SOPS は age のローカル鍵。secret は `home-infra` リポジトリにある。
 
 ```bash
-git config --show-origin --get gpg.program
-/mnt/c/Program\ Files/GnuPG/bin/gpg.exe --version
+cd ~/repositories/github.com/sotiak/home-infra
+sops --decrypt secrets/example.yaml
 ```
 
-ここで Windows 側バイナリを実行できないなら、[TROUBLESHOOTING.md](./TROUBLESHOOTING.md) の `WSLInterop` 復旧手順を先に使う。
-
-## GPG カード操作の確認
-
-`gpg --card-status` は、Git 署名とは別系統である。
-
-ここで見ているのは、WSL 側 `gpg` と `scdaemon` が YubiKey を読めるかどうかである。
+- 鍵は `~/.config/sops/age/keys.txt`（mode 600）
+- `SOPS_AGE_KEY_FILE` は `~/.config/sops/age/keys.txt`
+- `home-infra/.sops.yaml` に WSL の age 公開鍵を登録済み
+- 既存の PGP secret は、5 NFC を Windows に挿した状態で一度だけ移行する
 
 ```bash
-gpg --card-status
-gpgconf --kill scdaemon
-gpg --card-status
+cd ~/repositories/github.com/sotiak/home-infra
+SOPS_GPG_EXEC='/mnt/c/Program Files/GnuPG/bin/gpg.exe' \
+  sops updatekeys secrets/example.yaml
 ```
 
-`No such device` なら、GPG がカード自体を見つけられていない。
+移行後は 5 NFC を挿さなくてよい。
+macOS の age 公開鍵を `home-infra/.sops.yaml` に追加したら、`pgp:` の recipient は外す。
 
-この設定では `scdaemon` に `disable-ccid = true` を入れている。
+## VM への SSH
 
-そのため、WSL 側 `gpg` は内蔵 CCID ではなく `pcscd` 経由でカードを探す。
-
-ここで確認すべき順序は次のとおりである。
-
-1. `pcscd` が起動しているか。
-2. WSL に USB デバイスが attach されているか。
-3. `scdaemon` の古い状態が残っていないか。
+VM は Tailscale SSH で入る。SSH 鍵も agent も不要。
 
 ```bash
-systemctl status pcscd
-pcsc_scan
-gpgconf --kill scdaemon
-gpg --card-status
+ssh monitoring-01
 ```
 
-`pcsc_scan` でカードが見えないなら、問題は GPG より手前にある。
+- `tailscale status` で tailnet のホストを確認する
+- Tailscale の ACL が許可するユーザーで入る。`sk` が拒否される場合は `root` など ACL のユーザーを使う
+- `SSH_AUTH_SOCK` は設定しない。`ssh-add -l` は「no agent」で正常
 
-その場合は `usbip` の attach 状態を確認する。
+## YubiKey 5 NFC
 
-Windows 側では、少なくとも次を確認する。
+開発マシンでは使わない。持ち歩き用。
 
-```powershell
-usbipd list
-usbipd attach --wsl --busid <BUSID>
+- phone の FIDO2 / passkey（NFC）
+- OATH / OTP
+- GPG 鍵のバックアップ（`[C]` / `[E]` / `[A]`）
+
+SOPS と GitHub と Git 署名では使わない。
+5C Nano は使わない。
+
+## 前提: WSLInterop
+
+Windows の `gpg.exe` を WSL から呼ぶため、interop が必要。
+
+```bash
+/mnt/c/Windows/System32/cmd.exe /C "echo ok"
+cat /proc/sys/fs/binfmt_misc/WSLInterop
 ```
 
-`pcsc_scan` では見えるのに `gpg --card-status` だけ失敗するなら、`scdaemon` の状態を疑う。
+`protectBinfmt = false` にして、NixOS の `systemd-binfmt` に登録を任せている。
+`nixos-rebuild switch` の後や `wsl --shutdown` の後に確認する。
 
-`gpgconf --kill scdaemon` の後でも再現するなら、`pcscd` と `ccid` plugin の組み合わせを確認する。
+## 旧経路
 
-## 症状ごとの見分け方
+以下は削除済み。
 
-- `ssh -vvv` でも公開鍵提示まで進まない: `windows-ssh-agent-relay`、`SSH_AUTH_SOCK`、`npiperelay.exe` を見る。
-- `ssh-add -L` だけ失敗する: まず `ssh -vvv` で実際の認証可否を見る。
-- `git commit -S` が失敗する: `git config` の `gpg.program`、Windows 側 `gpg.exe`、`WSLInterop` を見る。
-- `gpg --card-status` が失敗する: `usbip`、`pcscd`、`pcsc_scan`、`scdaemon` を見る。
+- Windows OpenSSH agent の relay（`socat` + `npiperelay`）
+- NixOS-WSL の `wsl.ssh-agent`
+- `usbip` / `pcscd` / `pcsc-tools`
+- FIDO2 の SSH 鍵 / `SSH_SK_HELPER`
+- WSL の gpg-agent SSH support
 
-同じマシンでも、三つの症状は別々に壊れる。
-
-そのため、最初に失敗したコマンドを基準に経路を選ぶほうが早い。
+`~/.ssh/agent.sock` や古い `~/.ssh/config` の symlink が残っていれば削除する。
+WSL の `gpg --card-status` は失敗してよい。カード操作は Windows 側 gpg で行う。

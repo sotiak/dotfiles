@@ -50,7 +50,8 @@
         uv
         zig
 
-        # GPG support
+        # GPG / SOPS support
+        age
         sops
 
         # Misc
